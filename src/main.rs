@@ -1,21 +1,48 @@
-use std::fs;
-use regex::Regex;
+mod top_countries;
+mod sum_target;
 
 fn main() {
-    // Read the contents of the HTML file
-    let html_content = fs::read_to_string("demo.html").expect("Failed to read the file");
+    let cmd = clap::Command::new("uni")
+        .bin_name("uni")
+        .styles(CLAP_STYLING)
+        .subcommand_required(true)
+        .subcommand(
+            clap::command!("example").arg(
+                clap::arg!(--"manifest-path" <PATH>)
+                    .value_parser(clap::value_parser!(std::path::PathBuf)),
+            ),
+        )
+        .subcommand(clap::command!("bycountry"));
 
-    // Remove span tags and keep the content
-    let cleaned_content = remove_span_tags(&html_content);
-
-    // Write the cleaned content back to the file
-    fs::write("demo1.html", cleaned_content).expect("Failed to write to the file");
+    let matches = cmd.get_matches();
+    let matches = match matches.subcommand() {
+        Some(("example", matches)) => matches,
+        Some(("bycountry", _)) => {
+            top_countries::get_top_ten_unicorn_countries();
+            return;
+        }
+        Some(("sum", _)) => {
+            sum_target::sum_target(vec![1,2,3], 3);
+            return;
+        }
+        _ => unreachable!("clap should ensure we don't get here"),
+    };
+    let manifest_path = matches.get_one::<std::path::PathBuf>("manifest-path");
+    println!("{manifest_path:?}");
 }
 
-fn remove_span_tags(html: &str) -> String {
-    lazy_static::lazy_static! {
-        static ref SPAN_REGEX: Regex = Regex::new(r"<span(.*?)>(.*?)</span>").unwrap();
-    }
+pub const CLAP_STYLING: clap::builder::styling::Styles = clap::builder::styling::Styles::styled()
+    .header(clap_cargo::style::HEADER)
+    .usage(clap_cargo::style::USAGE)
+    .literal(clap_cargo::style::LITERAL)
+    .placeholder(clap_cargo::style::PLACEHOLDER)
+    .error(clap_cargo::style::ERROR)
+    .valid(clap_cargo::style::VALID)
+    .invalid(clap_cargo::style::INVALID);
 
-    SPAN_REGEX.replace_all(html, "$2").to_string()
+fn bycountry() {
+    // TODO: read csv 
+    
+    // get the top 10 countries with more startups
+    println!("bycountry");
 }

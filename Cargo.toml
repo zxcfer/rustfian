@@ -9,3 +9,6 @@ edition = "2021"
 regex = "1.10.5"
 scraper = "0.19.0"
 lazy_static = "1.4.0"
+clap = { version = "4.5.16", features = ["cargo"] }
+clap-cargo = "0.14.1"
+polars = { version = "0.42.0", features = ["lazy"] }
